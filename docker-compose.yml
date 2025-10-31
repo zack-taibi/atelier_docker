@@ -1,43 +1,38 @@
-version: '3.8'
+name: Test Docker Build & Compose
 
-services:
-  db:
-    image: mysql:8.0
-    container_name: mysql_db
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: ecole
-    volumes:
-      - db_data:/var/lib/mysql
-    networks:
-      - backend
+on:
+  push:
+    branches: [ main ]
+  pull_request:
 
-  php:
-    image: php:8.2-apache
-    container_name: php_app
-    volumes:
-      - ./app:/var/www/html
-    ports:
-      - "8080:80"
-    depends_on:
-      - db
-    networks:
-      - backend
+jobs:
+  build_and_compose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  phpmyadmin:
-    image: phpmyadmin
-    container_name: pma
-    ports:
-      - "8081:80"
-    environment:
-      PMA_HOST: db
-    depends_on:
-      - db
-    networks:
-      - backend
+      - name: Show Docker info
+        run: docker info
 
-volumes:
-  db_data:
+      - name: Build Docker image (Dockerfile à la racine)
+        run: docker build -t testimage:ci .
 
-networks:
-  backend:
+      - name: Validate docker-compose.yml
+        run: docker compose -f docker-compose.yml config -q
+
+      - name: Pull images for compose
+        run: docker compose -f docker-compose.yml pull
+
+      - name: Start stack
+        run: docker compose -f docker-compose.yml up -d
+
+      - name: List containers
+        run: docker ps
+
+      - name: Basic HTTP check (php_app)
+        run: docker exec php_app curl -s http://localhost | head -n 5
+
+      - name: Stop stack
+        if: always()
+        run: docker compose -f docker-compose.yml down

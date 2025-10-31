@@ -2,4 +2,4 @@
 FROM nginx:latest
 
 # copier la page index dans le répertoire par défaut nginx
-COPY index.html /usr/share/nginx/html/index.html
+COPY ./app/index.html /usr/share/nginx/html/index.html
