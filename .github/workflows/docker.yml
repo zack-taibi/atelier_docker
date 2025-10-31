@@ -1,13 +1,17 @@
 name: Test Docker Build
-
 on: [push]
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
       - name: Build Docker image
-        run: docker build -t testimage .
+        run: |
+          docker build -t testimage:ci .
