@@ -1,5 +1,5 @@
-# partir de nginx
-FROM nginx:latest
+FROM php:8.2-apache
 
-# copier la page index dans le répertoire par défaut nginx
-COPY ./app/index.html /usr/share/nginx/html/index.html
+COPY ./app /var/www/html
+
+EXPOSE 80
